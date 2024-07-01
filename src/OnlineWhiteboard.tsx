@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X } from 'lucide-react';  // この行を追加
+import { FiX } from 'react-icons/fi';
 
 interface Position {
   x: number;
@@ -123,7 +123,7 @@ const Sticky: React.FC<StickyProps> = ({ id, initialX, initialY, initialColor, o
           />
         ))}
         <button onClick={() => onDelete(id)} className="m-1">
-          <X size={16} />
+          <FiX size={16} />
         </button>
       </div>
       <div className="absolute inset-0 pointer-events-none">
