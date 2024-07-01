@@ -1,3 +1,23 @@
+import React, { useState, useRef, useEffect } from 'react';
+
+interface Position {
+  x: number;
+  y: number;
+}
+
+interface Size {
+  width: number;
+  height: number;
+}
+
+interface StickyProps {
+  id: string;
+  initialX: number;
+  initialY: number;
+  initialColor: string;
+  onDelete: (id: string) => void;
+}
+
 const Sticky: React.FC<StickyProps> = ({ id, initialX, initialY, initialColor, onDelete }) => {
   const [position, setPosition] = useState<Position>({ x: initialX, y: initialY });
   const [size, setSize] = useState<Size>({ width: 200, height: 200 });
@@ -52,35 +72,36 @@ const Sticky: React.FC<StickyProps> = ({ id, initialX, initialY, initialColor, o
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isDragging, isResizing, offset.x, offset.y, position.x, position.y, resizeDirection, size.height, size.width, size]);
+  }, [isDragging, isResizing, offset, position, resizeDirection, size]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
-    if (e.target === stickyRef.current) {
-      setIsDragging(true);
+    if (stickyRef.current) {
+      const rect = stickyRef.current.getBoundingClientRect();
       setOffset({
-        x: e.clientX - position.x,
-        y: e.clientY - position.y,
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
       });
     }
+    setIsDragging(true);
   };
 
   const handleResizeStart = (direction: string) => (e: React.MouseEvent) => {
     e.stopPropagation();
-    setIsResizing(true);
     setResizeDirection(direction);
+    setIsResizing(true);
   };
 
   return (
     <div
       ref={stickyRef}
-      className="absolute p-2 rounded shadow cursor-move"
+      className="absolute"
       style={{
         left: `${position.x}px`,
         top: `${position.y}px`,
         width: `${size.width}px`,
         height: `${size.height}px`,
         backgroundColor: color,
-        border: '1px solid rgba(0, 0, 0, 0.1)', // 薄い境界線を追加
+        border: '1px solid rgba(0, 0, 0, 0.1)',
       }}
       onMouseDown={handleMouseDown}
     >
@@ -92,7 +113,7 @@ const Sticky: React.FC<StickyProps> = ({ id, initialX, initialY, initialColor, o
         onMouseDown={(e) => e.stopPropagation()}
       />
       <div className="absolute top-0 right-0 flex" onMouseDown={(e) => e.stopPropagation()}>
-        {colors.map((c) => (
+        {['red', 'blue', 'green'].map((c) => (
           <button
             key={c}
             className="w-4 h-4 m-1 rounded-full border border-gray-300"
@@ -117,3 +138,5 @@ const Sticky: React.FC<StickyProps> = ({ id, initialX, initialY, initialColor, o
     </div>
   );
 };
+
+export default Sticky;
