@@ -1,10 +1,10 @@
 import React from 'react';
+import OnlineWhiteboard from './OnlineWhiteboard';
 
 function App() {
   return (
     <div className="App">
-      <h1>Online Whiteboard</h1>
-      {/* ここにホワイトボードのコンポーネントを追加します */}
+      <OnlineWhiteboard />
     </div>
   );
 }
