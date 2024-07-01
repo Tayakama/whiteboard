@@ -9,7 +9,30 @@ const colors = [
   'rgba(221, 160, 221, 0.3)'  // 薄い紫
 ];
 
-// ... (その他のインターフェース定義は変更なし)
+interface Position {
+  x: number;
+  y: number;
+}
+
+interface Size {
+  width: number;
+  height: number;
+}
+
+interface StickyProps {
+  id: number;
+  initialX: number;
+  initialY: number;
+  initialColor: string;
+  onDelete: (id: number) => void;
+}
+
+interface StickyData {
+  id: number;
+  x: number;
+  y: number;
+  color: string;
+}
 
 const Sticky: React.FC<StickyProps> = ({ id, initialX, initialY, initialColor, onDelete }) => {
   const [position, setPosition] = useState<Position>({ x: initialX, y: initialY });
@@ -40,7 +63,7 @@ const Sticky: React.FC<StickyProps> = ({ id, initialX, initialY, initialColor, o
       onMouseDown={handleMouseDown}
     >
       <textarea
-        className="w-full h-full bg-transparent resize-none outline-none text-black" // テキストの色を黒に設定
+        className="w-full h-full bg-transparent resize-none outline-none text-black"
         value={text}
         onChange={(e) => setText(e.target.value)}
         placeholder="テキストを入力"
@@ -50,7 +73,7 @@ const Sticky: React.FC<StickyProps> = ({ id, initialX, initialY, initialColor, o
         {colors.map((c) => (
           <button
             key={c}
-            className="w-4 h-4 m-1 rounded-full border border-gray-300" // ボーダーを追加して色をはっきりさせる
+            className="w-4 h-4 m-1 rounded-full border border-gray-300"
             style={{ backgroundColor: c }}
             onClick={() => setColor(c)}
           />
@@ -64,7 +87,44 @@ const Sticky: React.FC<StickyProps> = ({ id, initialX, initialY, initialColor, o
   );
 };
 
-// ... (Whiteboard コンポーネントは変更なし)
+const Whiteboard: React.FC = () => {
+  const [stickies, setStickies] = useState<StickyData[]>([]);
+
+  const addSticky = () => {
+    const newSticky: StickyData = {
+      id: Date.now(),
+      x: Math.random() * (window.innerWidth - 200),
+      y: Math.random() * (window.innerHeight - 200),
+      color: colors[Math.floor(Math.random() * colors.length)],
+    };
+    setStickies([...stickies, newSticky]);
+  };
+  
+  const deleteSticky = (id: number) => {
+    setStickies(stickies.filter(sticky => sticky.id !== id));
+  };
+
+  return (
+    <div className="relative w-screen h-screen bg-white">
+      {stickies.map((sticky) => (
+        <Sticky
+          key={sticky.id}
+          id={sticky.id}
+          initialX={sticky.x}
+          initialY={sticky.y}
+          initialColor={sticky.color}
+          onDelete={deleteSticky}
+        />
+      ))}
+      <button
+        className="absolute bottom-4 right-4 px-4 py-2 bg-blue-500 text-white rounded"
+        onClick={addSticky}
+      >
+        付箋を追加
+      </button>
+    </div>
+  );
+};
 
 const OnlineWhiteboard: React.FC = Whiteboard;
 export default OnlineWhiteboard;
