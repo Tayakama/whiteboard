@@ -1,143 +1,132 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { FiX } from 'react-icons/fi';
+import React, { useState, useRef } from 'react';
+import { X } from 'lucide-react';
 
-interface Position {
-  x: number;
-  y: number;
-}
+const colors = ['#fff9c4', '#c8e6c9', '#bbdefb', '#ffcdd2', '#e1bee7'];
 
-interface Size {
-  width: number;
-  height: number;
-}
+const Sticky = ({ id, initialX, initialY, initialColor, onDelete }) => {
+  const [pos, setPos] = useState({ x: initialX, y: initialY });
+  const [isDragging, setIsDragging] = useState(false);
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const [text, setText] = useState('');
+  const [color, setColor] = useState(initialColor);
 
-interface StickyProps {
-  id: string;
-  initialX: number;
-  initialY: number;
-  initialColor: string;
-  onDelete: (id: string) => void;
-}
-
-const Sticky: React.FC<StickyProps> = ({ id, initialX, initialY, initialColor, onDelete }) => {
-  const [position, setPosition] = useState<Position>({ x: initialX, y: initialY });
-  const [size, setSize] = useState<Size>({ width: 200, height: 200 });
-  const [isDragging, setIsDragging] = useState<boolean>(false);
-  const [isResizing, setIsResizing] = useState<boolean>(false);
-  const [resizeDirection, setResizeDirection] = useState<string>('');
-  const [offset, setOffset] = useState<Position>({ x: 0, y: 0 });
-  const [text, setText] = useState<string>('');
-  const [color, setColor] = useState<string>(initialColor);
-
-  const stickyRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (isDragging) {
-        setPosition({
-          x: e.clientX - offset.x,
-          y: e.clientY - offset.y,
-        });
-      } else if (isResizing) {
-        const newSize = { ...size };
-        if (resizeDirection.includes('right')) {
-          newSize.width = Math.max(100, e.clientX - position.x);
-        }
-        if (resizeDirection.includes('bottom')) {
-          newSize.height = Math.max(100, e.clientY - position.y);
-        }
-        if (resizeDirection.includes('left')) {
-          const newWidth = Math.max(100, size.width + (position.x - e.clientX));
-          newSize.width = newWidth;
-          setPosition(prev => ({ ...prev, x: e.clientX }));
-        }
-        if (resizeDirection.includes('top')) {
-          const newHeight = Math.max(100, size.height + (position.y - e.clientY));
-          newSize.height = newHeight;
-          setPosition(prev => ({ ...prev, y: e.clientY }));
-        }
-        setSize(newSize);
-      }
-    };
-
-    const handleMouseUp = () => {
-      setIsDragging(false);
-      setIsResizing(false);
-      setResizeDirection('');
-    };
-
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
-
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-    };
-  }, [isDragging, isResizing, offset, position, resizeDirection, size]);
-
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (stickyRef.current) {
-      const rect = stickyRef.current.getBoundingClientRect();
-      setOffset({
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top,
-      });
-    }
+  const handleMouseDown = (e) => {
     setIsDragging(true);
+    setOffset({
+      x: e.clientX - pos.x,
+      y: e.clientY - pos.y
+    });
   };
 
-  const handleResizeStart = (direction: string) => (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setResizeDirection(direction);
-    setIsResizing(true);
+  const handleMouseMove = (e) => {
+    if (isDragging) {
+      setPos({
+        x: e.clientX - offset.x,
+        y: e.clientY - offset.y
+      });
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
   };
 
   return (
     <div
-      ref={stickyRef}
-      className="absolute"
       style={{
-        left: `${position.x}px`,
-        top: `${position.y}px`,
-        width: `${size.width}px`,
-        height: `${size.height}px`,
+        position: 'absolute',
+        left: pos.x,
+        top: pos.y,
+        width: '150px',
+        height: '150px',
         backgroundColor: color,
-        border: '1px solid rgba(0, 0, 0, 0.1)',
+        padding: '10px',
+        boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+        cursor: isDragging ? 'grabbing' : 'grab',
       }}
       onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
     >
       <textarea
-        className="w-full h-full bg-transparent resize-none outline-none text-black"
         value={text}
         onChange={(e) => setText(e.target.value)}
-        placeholder="テキストを入力"
-        onMouseDown={(e) => e.stopPropagation()}
+        style={{
+          width: '100%',
+          height: '80%',
+          border: 'none',
+          resize: 'none',
+          backgroundColor: 'transparent',
+          color: 'black',
+        }}
       />
-      <div className="absolute top-0 right-0 flex" onMouseDown={(e) => e.stopPropagation()}>
-        {['red', 'blue', 'green'].map((c) => (
-          <button
-            key={c}
-            className="w-4 h-4 m-1 rounded-full border border-gray-300"
-            style={{ backgroundColor: c }}
-            onClick={() => setColor(c)}
-          />
-        ))}
-        <button onClick={() => onDelete(id)} className="m-1">
-          <FiX size={16} />
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '5px' }}>
+        <select
+          value={color}
+          onChange={(e) => setColor(e.target.value)}
+          style={{ fontSize: '10px' }}
+        >
+          {colors.map((c) => (
+            <option key={c} value={c} style={{backgroundColor: c}}>
+              {c}
+            </option>
+          ))}
+        </select>
+        <button onClick={() => onDelete(id)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+          <X size={16} />
         </button>
-      </div>
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-0 left-0 w-2 h-full cursor-w-resize" onMouseDown={handleResizeStart('left')} />
-        <div className="absolute top-0 right-0 w-2 h-full cursor-e-resize" onMouseDown={handleResizeStart('right')} />
-        <div className="absolute top-0 left-0 w-full h-2 cursor-n-resize" onMouseDown={handleResizeStart('top')} />
-        <div className="absolute bottom-0 left-0 w-full h-2 cursor-s-resize" onMouseDown={handleResizeStart('bottom')} />
-        <div className="absolute top-0 left-0 w-4 h-4 cursor-nw-resize" onMouseDown={handleResizeStart('top-left')} />
-        <div className="absolute top-0 right-0 w-4 h-4 cursor-ne-resize" onMouseDown={handleResizeStart('top-right')} />
-        <div className="absolute bottom-0 left-0 w-4 h-4 cursor-sw-resize" onMouseDown={handleResizeStart('bottom-left')} />
-        <div className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize" onMouseDown={handleResizeStart('bottom-right')} />
       </div>
     </div>
   );
 };
 
-export default Sticky;
+const Whiteboard = () => {
+  const [stickies, setStickies] = useState([
+    { id: 1, x: 50, y: 50, color: colors[0] },
+    { id: 2, x: 200, y: 100, color: colors[1] },
+    { id: 3, x: 350, y: 150, color: colors[2] },
+  ]);
+  const [nextId, setNextId] = useState(4);
+
+  const addSticky = () => {
+    setStickies([...stickies, { id: nextId, x: 50, y: 50, color: colors[0] }]);
+    setNextId(nextId + 1);
+  };
+
+  const deleteSticky = (id) => {
+    setStickies(stickies.filter(sticky => sticky.id !== id));
+  };
+
+  return (
+    <div style={{ width: '100%', height: '600px', position: 'relative', backgroundColor: '#f0f0f0', border: '1px solid #ccc' }}>
+      {stickies.map((sticky) => (
+        <Sticky
+          key={sticky.id}
+          id={sticky.id}
+          initialX={sticky.x}
+          initialY={sticky.y}
+          initialColor={sticky.color}
+          onDelete={deleteSticky}
+        />
+      ))}
+      <button
+        onClick={addSticky}
+        style={{
+          position: 'absolute',
+          bottom: '20px',
+          right: '20px',
+          padding: '10px',
+          backgroundColor: '#4CAF50',
+          color: 'white',
+          border: 'none',
+          borderRadius: '5px',
+          cursor: 'pointer',
+        }}
+      >
+        付箋を追加
+      </button>
+    </div>
+  );
+};
+
+export default Whiteboard;
