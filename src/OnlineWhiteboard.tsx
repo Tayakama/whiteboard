@@ -3,20 +3,38 @@ import { X } from 'lucide-react';
 
 const colors = ['yellow', 'pink', 'blue', 'green', 'purple'];
 
-const Sticky = ({ id, initialX, initialY, initialColor, onDelete }) => {
-  const [position, setPosition] = useState({ x: initialX, y: initialY });
-  const [size, setSize] = useState({ width: 200, height: 200 });
-  const [isDragging, setIsDragging] = useState(false);
-  const [isResizing, setIsResizing] = useState(false);
-  const [resizeDirection, setResizeDirection] = useState('');
-  const [offset, setOffset] = useState({ x: 0, y: 0 });
-  const [text, setText] = useState('');
-  const [color, setColor] = useState(initialColor);
+interface StickyProps {
+  id: number;
+  initialX: number;
+  initialY: number;
+  initialColor: string;
+  onDelete: (id: number) => void;
+}
 
-  const stickyRef = useRef(null);
+interface Position {
+  x: number;
+  y: number;
+}
+
+interface Size {
+  width: number;
+  height: number;
+}
+
+const Sticky: React.FC<StickyProps> = ({ id, initialX, initialY, initialColor, onDelete }) => {
+  const [position, setPosition] = useState<Position>({ x: initialX, y: initialY });
+  const [size, setSize] = useState<Size>({ width: 200, height: 200 });
+  const [isDragging, setIsDragging] = useState<boolean>(false);
+  const [isResizing, setIsResizing] = useState<boolean>(false);
+  const [resizeDirection, setResizeDirection] = useState<string>('');
+  const [offset, setOffset] = useState<Position>({ x: 0, y: 0 });
+  const [text, setText] = useState<string>('');
+  const [color, setColor] = useState<string>(initialColor);
+
+  const stickyRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const handleMouseMove = (e) => {
+    const handleMouseMove = (e: MouseEvent) => {
       if (isDragging) {
         setPosition({
           x: e.clientX - offset.x,
@@ -57,9 +75,9 @@ const Sticky = ({ id, initialX, initialY, initialColor, onDelete }) => {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isDragging, isResizing, offset, position, size, resizeDirection]);
+  }, [isDragging, isResizing, offset.x, offset.y, position.x, position.y, resizeDirection, size.height, size.width]);
 
-  const handleMouseDown = (e) => {
+  const handleMouseDown = (e: React.MouseEvent) => {
     if (e.target === stickyRef.current) {
       setIsDragging(true);
       setOffset({
@@ -69,7 +87,7 @@ const Sticky = ({ id, initialX, initialY, initialColor, onDelete }) => {
     }
   };
 
-  const handleResizeStart = (direction) => (e) => {
+  const handleResizeStart = (direction: string) => (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsResizing(true);
     setResizeDirection(direction);
@@ -121,11 +139,18 @@ const Sticky = ({ id, initialX, initialY, initialColor, onDelete }) => {
   );
 };
 
-const Whiteboard = () => {
-  const [stickies, setStickies] = useState([]);
+interface Sticky {
+  id: number;
+  x: number;
+  y: number;
+  color: string;
+}
+
+const Whiteboard: React.FC = () => {
+  const [stickies, setStickies] = useState<Sticky[]>([]);
 
   const addSticky = () => {
-    const newSticky = {
+    const newSticky: Sticky = {
       id: Date.now(),
       x: Math.random() * (window.innerWidth - 200),
       y: Math.random() * (window.innerHeight - 200),
@@ -133,8 +158,8 @@ const Whiteboard = () => {
     };
     setStickies([...stickies, newSticky]);
   };
-
-  const deleteSticky = (id) => {
+  
+  const deleteSticky = (id: number) => {
     setStickies(stickies.filter(sticky => sticky.id !== id));
   };
 
@@ -160,5 +185,5 @@ const Whiteboard = () => {
   );
 };
 
-const OnlineWhiteboard = Whiteboard;
+const OnlineWhiteboard: React.FC = Whiteboard;
 export default OnlineWhiteboard;
