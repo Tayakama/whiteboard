@@ -21,6 +21,13 @@ interface Size {
   height: number;
 }
 
+interface StickyData {
+  id: number;
+  x: number;
+  y: number;
+  color: string;
+}
+
 const Sticky: React.FC<StickyProps> = ({ id, initialX, initialY, initialColor, onDelete }) => {
   const [position, setPosition] = useState<Position>({ x: initialX, y: initialY });
   const [size, setSize] = useState<Size>({ width: 200, height: 200 });
@@ -75,7 +82,7 @@ const Sticky: React.FC<StickyProps> = ({ id, initialX, initialY, initialColor, o
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isDragging, isResizing, offset.x, offset.y, position.x, position.y, resizeDirection, size.height, size.width]);
+  }, [isDragging, isResizing, offset.x, offset.y, position.x, position.y, resizeDirection, size.height, size.width, size]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (e.target === stickyRef.current) {
@@ -139,18 +146,11 @@ const Sticky: React.FC<StickyProps> = ({ id, initialX, initialY, initialColor, o
   );
 };
 
-interface Sticky {
-  id: number;
-  x: number;
-  y: number;
-  color: string;
-}
-
 const Whiteboard: React.FC = () => {
-  const [stickies, setStickies] = useState<Sticky[]>([]);
+  const [stickies, setStickies] = useState<StickyData[]>([]);
 
   const addSticky = () => {
-    const newSticky: Sticky = {
+    const newSticky: StickyData = {
       id: Date.now(),
       x: Math.random() * (window.innerWidth - 200),
       y: Math.random() * (window.innerHeight - 200),
