@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { X } from 'lucide-react';  // この行を追加
 
 interface Position {
   x: number;
