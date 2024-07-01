@@ -160,4 +160,5 @@ const Whiteboard = () => {
   );
 };
 
-export default Whiteboard;
+const OnlineWhiteboard = Whiteboard;
+export default OnlineWhiteboard;
